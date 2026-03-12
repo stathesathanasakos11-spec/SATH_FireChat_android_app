@@ -1,11 +1,11 @@
-# SATH FireChat 💬
+# SATH FireChat
 ### A Professional Real-time Android Messaging System
 
 **SATH FireChat** is a robust, high-performance Android application built to demonstrate modern mobile development practices. It provides a seamless real-time communication experience, leveraging **Firebase** for backend services and a meticulously decoupled architecture to ensure scalability and maintainability.
 
 ---
 
-## 🚀 Core Features
+## Core Features
 
 - **Real-time Messaging**: Instant data synchronization across devices using Firebase Realtime Database.
 - **Secure Authentication**: Integrated dual-auth system supporting standard **Email/Password** credentials and **Google Sign-In**.
@@ -16,7 +16,7 @@
 
 ---
 
-## 🏗 Architecture Deep Dive
+## Architecture Deep Dive
 
 The project follows **Clean Architecture** principles, prioritizing the **Single Responsibility Principle (SOLID)**. The logic is divided into distinct layers to avoid "God Activities" and ensure high maintainability:
 
@@ -33,7 +33,7 @@ Firebase serves as the single source of truth. The app utilizes:
 
 ---
 
-## 🔑 Key Code Explanations
+## Key Code Explanations
 
 ### Decoupled Logic Pattern
 Instead of calling Firebase directly from the Activity, we use a Manager pattern with asynchronous callbacks. This makes the code unit-testable and the UI highly responsive.
@@ -68,7 +68,7 @@ protected void attachBaseContext(Context newBase) {
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 - **Language**: Java
 - **Backend**: Firebase (Auth, Realtime Database)
@@ -79,15 +79,7 @@ protected void attachBaseContext(Context newBase) {
 
 ---
 
-## 📸 Screenshots
-
-| Login Screen | Chat History | Real-time Chat |
-| :---: | :---: | :---: |
-| ![Login](https://via.placeholder.com/200x400?text=Login+Screen) | ![History](https://via.placeholder.com/200x400?text=Chat+List) | ![Chat](https://via.placeholder.com/200x400?text=Chat+Interface) |
-
----
-
-## ⚙️ Setup & Run
+## Setup & Run
 
 1. **Clone the repository**:
    ```sh
@@ -105,6 +97,6 @@ protected void attachBaseContext(Context newBase) {
 
 ---
 
-## 👨‍💻 Author
-**Student Name**  
+## Author
+**Efstathios Panagiotis Athanasakos**  
 *Computer Science Student at University of Piraeus*
