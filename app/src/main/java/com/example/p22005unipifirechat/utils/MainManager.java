@@ -1,7 +1,6 @@
 package com.example.p22005unipifirechat.utils;
 
 import androidx.annotation.NonNull;
-
 import com.example.p22005unipifirechat.modelclasses.User;
 import com.example.p22005unipifirechat.interfaces.ChatListListener;
 import com.example.p22005unipifirechat.interfaces.UserSearchListener;
@@ -11,21 +10,19 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Manager responsible for the business logic of the Main screen.
- * Handles chat list retrieval, user searching, and chat deletion.
- */
-public class MainManager {
 
+public class MainManager {
+    //Singleton Design Pattern
     private static MainManager instance;
+    // επικοινωνία με τη Realtime Database για διαχωρισμό επιπέδων με την MainActivity
     private final DatabaseReference mDatabase;
+    //keeps track of the last message time for each user
     private final Map<String, Long> userLastMsgMap = new HashMap<>();
     private final List<User> userList = new ArrayList<>();
 
@@ -40,10 +37,11 @@ public class MainManager {
         return instance;
     }
 
-    /**
-     * Listens for changes in the user's chat list and fetches details for each chat partner.
-     */
+
+
+
     public ValueEventListener observeChatList(String currentUserId, ChatListListener listener) {
+        // κόμβος ChatList στον χρήστη με το UID του
         DatabaseReference chatListRef = mDatabase.child("ChatList").child(currentUserId);
         ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
@@ -57,6 +55,7 @@ public class MainManager {
                 }
 
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    //save the last message time for each user in the userLastMsgMap for currentUser
                     String otherUserId = dataSnapshot.getKey();
                     long time = 0;
                     if (dataSnapshot.hasChild("date")) {
@@ -75,9 +74,14 @@ public class MainManager {
                 listener.onError(error.getMessage());
             }
         };
+
+        // άμεση ενημέρωση της MainActivity γισ την κατάστασης ενός κόμβου του chatList node
         chatListRef.addValueEventListener(valueEventListener);
         return valueEventListener;
     }
+
+
+
 
     private void fetchUserDetails(String userId, ChatListListener listener) {
         mDatabase.child("users").child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -85,7 +89,7 @@ public class MainManager {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 User user = snapshot.getValue(User.class);
                 if (user != null) {
-                    // Remove existing entry to avoid duplicates
+                    // Remove existing entry to avoid duplicates chats in the recyclerView
                     for (int i = 0; i < userList.size(); i++) {
                         if (userList.get(i).uid.equals(user.uid)) {
                             userList.remove(i);
@@ -94,6 +98,7 @@ public class MainManager {
                     }
 
                     if (userLastMsgMap.containsKey(user.uid)) {
+                        //ενημέρωση timestamp τελευταίου μηνύματος
                         user.lastMsgTime = userLastMsgMap.get(user.uid);
                     }
 
@@ -111,20 +116,23 @@ public class MainManager {
         });
     }
 
-    /**
-     * Searches for a user by their exact username.
-     */
+
+
+
+    //αναζήτηση χρήστη στη realtime databse με το ακριβές username από την MainActivity
     public void findUserByUsername(String username, UserSearchListener listener) {
+        // όλοι οι χρήστες σε σειρά και αναζήτηση με συγκεκριμένου username
         mDatabase.child("users").orderByChild("username").equalTo(username)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
+                            //αν βρεθεί το username κρατάω το UID του χρήστη που εμφανίστηκε πρώτη φορά
                             for (DataSnapshot userSnapshot : snapshot.getChildren()) {
                                 String uid = userSnapshot.getKey();
                                 String foundUsername = userSnapshot.child("username").getValue(String.class);
                                 listener.onUserFound(uid, foundUsername);
-                                return; // Return after the first match
+                                return; // stop loop after first successful match
                             }
                         } else {
                             listener.onUserNotFound();
@@ -138,10 +146,12 @@ public class MainManager {
                 });
     }
 
-    /**
-     * Deletes a chat from the user's ChatList.
-     */
+
+
+
+
     public void deleteChat(String currentUserId, String otherUserId, ActionResultListener listener) {
+        //αφαίρεση συνομιλίας από τη βάση για τον currentUser δοθέντων των UID των εμπλεκόμενων χρηστών
         mDatabase.child("ChatList").child(currentUserId).child(otherUserId).removeValue()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {

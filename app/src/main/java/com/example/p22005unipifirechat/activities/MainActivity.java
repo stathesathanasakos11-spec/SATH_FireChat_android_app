@@ -8,7 +8,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import java.util.ArrayList;
+import java.util.List;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -32,15 +33,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
-import java.util.List;
 
-/**
- * Main screen displaying chat list.
- * Extends BaseActivity for unified theme and language handling.
- */
+
 public class MainActivity extends BaseActivity {
-
     private RecyclerView recyclerViewChats;
     private FloatingActionButton fabNewChat;
     private TextView tvEmptyState;
@@ -75,6 +70,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void setupEdgeToEdge() {
+        //screen settings set up for edge to edge
         View toolbar = findViewById(R.id.toolbar);
         if (toolbar != null) {
             ViewCompat.setOnApplyWindowInsetsListener(toolbar, (v, insets) -> {
@@ -113,6 +109,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void setupRecyclerView() {
+        //μετά από τις αρχικοποίησεις ορίζω και τον Adapter για το RecyclerView
         recyclerViewChats.setHasFixedSize(true);
         recyclerViewChats.setLayoutManager(new LinearLayoutManager(this));
         userList = new ArrayList<>();
@@ -136,13 +133,19 @@ public class MainActivity extends BaseActivity {
         btnLogout.setOnClickListener(v -> showLogoutDialog());
     }
 
+
+
+
+
+    // μέσω του ChatListListener interface λαμβάνω όλες τις συνομιλίες του currentUser από τον MainManager
     private void observeChats() {
         chatListListener = mainManager.observeChatList(currentUserId, new ChatListListener() {
             @Override
             public void onChatListUpdated(List<User> users) {
                 tvEmptyState.setVisibility(View.GONE);
                 recyclerViewChats.setVisibility(View.VISIBLE);
-                userList.clear();
+                userList.clear(); // καθάρισμα λίστας
+                // άμεση δημιουργία της ξανά για σωστά ενημερωμένη εμφάνιση συνομιλιών χρονολογικά
                 userList.addAll(users);
                 usersAdapter.notifyDataSetChanged();
             }
@@ -160,6 +163,12 @@ public class MainActivity extends BaseActivity {
         });
     }
 
+
+
+
+
+
+    // αποσύνδεση currentUser
     private void showLogoutDialog() {
         new AlertDialog.Builder(this)
                 .setTitle(R.string.logout_title)
@@ -175,6 +184,17 @@ public class MainActivity extends BaseActivity {
         GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(this, gso);
         googleSignInClient.revokeAccess().addOnCompleteListener(task -> navigateToLogin());
     }
+
+    private void navigateToLogin() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+
+
+
 
     private void showDeleteChatDialog(User user) {
         new AlertDialog.Builder(MainActivity.this)
@@ -197,6 +217,10 @@ public class MainActivity extends BaseActivity {
                 .show();
     }
 
+
+
+
+    //  αναζήτηση χρήστη και έναρξη συνομιλίας
     private void showNewChatDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.new_chat);
@@ -238,15 +262,12 @@ public class MainActivity extends BaseActivity {
         startActivity(intent);
     }
 
-    private void navigateToLogin() {
-        Intent intent = new Intent(this, LoginActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
-    }
+
+
 
     @Override
     protected void onDestroy() {
+        //αποδέσμευση ValueEventListener για εξοικονόμηση πόρων
         super.onDestroy();
         if (chatListListener != null) {
             FirebaseDatabase.getInstance().getReference("ChatList").child(currentUserId).removeEventListener(chatListListener);

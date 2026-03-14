@@ -9,7 +9,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import java.util.ArrayList;
+import java.util.List;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -27,13 +28,7 @@ import com.example.p22005unipifirechat.utils.AuthManager;
 import com.example.p22005unipifirechat.utils.ChatManager;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
-import java.util.List;
 
-/**
- * Activity responsible for the Chat UI.
- * Supports localized context and dynamic navigation bar padding.
- */
 public class ChatActivity extends BaseActivity {
 
     private ImageButton btnBack, btnSend;
