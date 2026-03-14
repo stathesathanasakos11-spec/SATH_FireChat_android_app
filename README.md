@@ -1,11 +1,9 @@
-# SATH FireChat 
-### A Real-time Android Messaging System
+# SATH FireChat
+### A Professional Real-time Android Messaging System
 
-**SATH FireChat** is a robust, high-performance Android application built to demonstrate modern mobile development practices. 
-It provides a seamless real-time communication experience, leveraging **Firebase** for backend services and a meticulously decoupled 
-architecture to ensure scalability and maintainability.
+**SATH FireChat** is a robust, high-performance Android application built to demonstrate modern mobile development practices. It provides a seamless real-time communication experience, leveraging **Firebase** for backend services and a meticulously decoupled architecture to ensure scalability and maintainability.
 
-----------------------------------
+---
 
 ## Core Features
 
@@ -68,7 +66,7 @@ protected void attachBaseContext(Context newBase) {
 }
 ```
 
-
+---
 
 ## Tech Stack
 
@@ -79,8 +77,7 @@ protected void attachBaseContext(Context newBase) {
 - **Jetpack Libraries**: Activity, Core
 - **Persistence**: SharedPreferences (Theme & Locale preference)
 
-
-
+---
 
 ## Setup & Run
 
@@ -97,3 +94,9 @@ protected void attachBaseContext(Context newBase) {
 3. **Build**:
    - Open the project in Android Studio.
    - Sync Gradle files and run the application on an emulator or physical device.
+
+---
+
+## Author
+**Efstathios Panagiotis Athanasakos**  
+*Computer Science Student at University of Piraeus*
