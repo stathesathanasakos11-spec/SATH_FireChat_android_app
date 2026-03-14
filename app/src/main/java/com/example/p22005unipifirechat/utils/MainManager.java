@@ -150,7 +150,6 @@ public class MainManager {
 
 
 
-
     public void deleteChat(String currentUserId, String otherUserId, ActionResultListener listener) {
         //αφαίρεση συνομιλίας από τη βάση για τον currentUser δοθέντων των UID των εμπλεκόμενων χρηστών
         mDatabase.child("ChatList").child(currentUserId).child(otherUserId).removeValue()

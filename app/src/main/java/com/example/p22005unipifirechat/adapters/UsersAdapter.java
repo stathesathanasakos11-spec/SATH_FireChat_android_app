@@ -40,7 +40,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
 
 
-
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         User currentUser = userList.get(position);
