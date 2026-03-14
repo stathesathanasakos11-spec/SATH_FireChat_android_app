@@ -83,6 +83,7 @@ public class MainManager {
 
 
 
+
     private void fetchUserDetails(String userId, ChatListListener listener) {
         mDatabase.child("users").child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

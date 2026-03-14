@@ -255,6 +255,7 @@ public class MainActivity extends BaseActivity {
         builder.show();
     }
 
+
     private void openChatActivity(String uid, String username) {
         Intent intent = new Intent(this, ChatActivity.class);
         intent.putExtra("other_uid", uid);
