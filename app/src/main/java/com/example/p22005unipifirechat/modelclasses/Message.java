@@ -8,6 +8,7 @@ public class Message {
     public long timestamp;
     public String key;
 
+    //της Firebase
     public Message() {
     }
 

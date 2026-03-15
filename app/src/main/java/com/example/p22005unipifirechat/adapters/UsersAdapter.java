@@ -33,7 +33,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     @Override
     public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         //το viewHolder δημιουργείται μια φορά και είναι ένα πρότυπο που κρατά στη μνήμη τα ids των views
-        // για να μην πρέπει κάθε φορά για ένα νέο στοιχείο του recyclerView να κάνω ξανά αναζήτηση για τα
+        // για να μην πρέπει κάθε φορά για ένα νέο στοιχείο του recyclerView να κάνω ξανά αναζήτηση
         View view = LayoutInflater.from(context).inflate(R.layout.item_user_row, parent, false);
         return new UserViewHolder(view);
     }
@@ -43,7 +43,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         User currentUser = userList.get(position);
-        // τοποθέτηση στοιχείων βάσης στα αντίστοιχα xml πεδίας του viewholder
+        //τοποθέτηση στοιχείων βάσης στα αντίστοιχα xml πεδία του viewHolder
         holder.tvUsername.setText(currentUser.username);
         AvatarUtils.setAvatar(holder.imgUserAvatar, currentUser.imageUrl);
 

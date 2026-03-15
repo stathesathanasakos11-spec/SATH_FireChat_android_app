@@ -251,7 +251,6 @@ public class LoginActivity extends BaseActivity {
 
 
 
-
     private void setLoading(boolean isLoading) {
         // για να μην πατηθεί το κουμπί πολλές φορές κάνω ένα εφέ φόρτωσης
         if (progressBar != null) {

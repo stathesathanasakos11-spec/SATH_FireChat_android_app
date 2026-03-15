@@ -19,14 +19,11 @@ import java.util.List;
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHolder> {
     public static final int MSG_TYPE_LEFT = 0;
     public static final int MSG_TYPE_RIGHT = 1;
-
     private Context context;
     private List<Message> mChat;
     private String imageUrl;
-
-    // υπάρχει interface για κάποιες λειτουργίες γιατι ο adapter πρέπει να ακολουθεί την SRP όσο γίνεται
+    // υπάρχει interface για κάποιες λειτουργίες για να ακολουθεί ο adapter την αρχή SRP
     private IMessageActionListener listener;
-
     FirebaseUser fuser;
 
     public MessageAdapter(Context context, List<Message> mChat, String imageUrl, IMessageActionListener listener){
@@ -36,9 +33,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         this.listener = listener;
     }
 
+
     @NonNull
     @Override
     public MessageAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // σε ποιο xml (δεξιά-αριστερά) θα πασάρω τα δεδομένα του μηνύματος με τον recyclerView
         if (viewType == MSG_TYPE_RIGHT) {
             View view = LayoutInflater.from(context).inflate(R.layout.item_chat_right, parent, false);
             return new ViewHolder(view);
@@ -48,13 +47,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         }
     }
 
+
     @Override
     public void onBindViewHolder(@NonNull MessageAdapter.ViewHolder holder, int position) {
         Message chat = mChat.get(position);
         holder.show_message.setText(chat.messageText);
 
         if (getItemViewType(position) == MSG_TYPE_LEFT && holder.imgChatAvatar != null) {
-
+            //εικόνα του συνομιλητή δίπλα στο μήνυμα του
+            // χρησιμοποιώ την setAvatar() της AvatarsUtil
             holder.imgChatAvatar.setVisibility(View.VISIBLE);
             AvatarUtils.setAvatar(holder.imgChatAvatar, imageUrl);
         }
@@ -76,7 +77,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         return mChat.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+
+
+
+
+    public static class ViewHolder extends RecyclerView.ViewHolder{
         public TextView show_message;
         public ImageView imgChatAvatar;
 
@@ -87,9 +92,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         }
     }
 
+    //ελέγχω αν το μήνυμα το έστειλε ο άλλος ή ο currentUser
+    // κάθε μήνυμα θα εμφανίζεται δεξιά-αριστερά ανάλογα με τον τύπο του
     @Override
     public int getItemViewType(int position) {
         fuser = FirebaseAuth.getInstance().getCurrentUser();
+        //
         if (fuser != null && mChat.get(position).senderId.equals(fuser.getUid())){
             return MSG_TYPE_RIGHT;
         } else {

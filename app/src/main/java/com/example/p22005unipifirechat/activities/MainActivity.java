@@ -265,8 +265,6 @@ public class MainActivity extends BaseActivity {
 
 
 
-
-
     @Override
     protected void onDestroy() {
         //αποδέσμευση ValueEventListener για εξοικονόμηση πόρων

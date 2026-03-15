@@ -11,13 +11,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class ChatManager {
-
+    // Singleton Design Pattern
     private static ChatManager instance;
     private final DatabaseReference mDatabase;
 
@@ -33,13 +32,16 @@ public class ChatManager {
     }
 
 
+
+    // ενημέρωση realtime database με το νέο μήνυμα
     public void sendMessage(String senderId, String receiverId, String messageText, MessageActionResultListener listener) {
+        // προσθήκη μηνύματος στο Chats node
         DatabaseReference newMsgRef = mDatabase.child("Chats").push();
         String messageId = newMsgRef.getKey();
 
         HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("senderId", senderId);
-        hashMap.put("receiverId", receiverId);
+        hashMap.put("senderId", senderId);  // αποστολέας
+        hashMap.put("receiverId", receiverId); // παραλήπτης
         hashMap.put("messageText", messageText);
         hashMap.put("timestamp", System.currentTimeMillis());
         hashMap.put("key", messageId);
@@ -47,31 +49,37 @@ public class ChatManager {
         newMsgRef.setValue(hashMap).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 updateChatList(senderId, receiverId);
-                if (listener != null) listener.onSuccess();
+                if (listener != null)
+                {
+                    listener.onSuccess();
+                }
             } else {
-                if (listener != null) listener.onFailure(task.getException() != null ? task.getException().getMessage() : "Failed to send message");
+                if (listener != null) {
+                    listener.onFailure(task.getException() != null ? task.getException().getMessage() : "Failed to send message");
+                }
             }
         });
     }
 
+
+    // ενημέρωση κόμβου ChatList που έχει για τον καθένα σε ποιους έστειλε μήνυμα και πότε (πιο πρόσφατο μήνυμα)
     private void updateChatList(String senderId, String receiverId) {
         long currentTime = System.currentTimeMillis();
-
-        // Update ChatList for sender
+        // Update ChatList node for sender
         DatabaseReference chatRefSender = mDatabase.child("ChatList").child(senderId).child(receiverId);
         chatRefSender.child("id").setValue(receiverId);
         chatRefSender.child("date").setValue(currentTime);
-
-        // Update ChatList for receiver
+        // Also update ChatList node for receiver
         DatabaseReference chatRefReceiver = mDatabase.child("ChatList").child(receiverId).child(senderId);
         chatRefReceiver.child("id").setValue(senderId);
         chatRefReceiver.child("date").setValue(currentTime);
     }
 
-    /**
-     * Sets up a real-time listener for messages between two users.
-     */
+
+
+
     public ValueEventListener listenForMessages(String myId, String otherUserId, MessagesListener listener) {
+        // ελέγχος αν υπάρχει μήνυμα μόνο μεταξύ των 2 συνομιλητών
         DatabaseReference reference = mDatabase.child("Chats");
         ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
@@ -81,6 +89,7 @@ public class ChatManager {
                     Message chat = snapshot.getValue(Message.class);
                     if (chat != null) {
                         chat.setKey(snapshot.getKey());
+                        //αν το μήνυμα ανήκει στον sender ή τον receiver τότε το προσθέτω στη λίστα που θα δείξει ο recyclerView
                         if ((chat.receiverId.equals(myId) && chat.senderId.equals(otherUserId)) ||
                                 (chat.receiverId.equals(otherUserId) && chat.senderId.equals(myId))) {
                             mChat.add(chat);
@@ -96,25 +105,11 @@ public class ChatManager {
             }
         };
         reference.addValueEventListener(valueEventListener);
-        return valueEventListener;
+        return valueEventListener; //θα το χρησιμοποιήσω στην onDestroy() της ChatActivity
     }
 
-    /**
-     * Deletes a specific message by its key.
-     */
-    public void deleteMessage(String messageKey, MessageActionResultListener listener) {
-        mDatabase.child("Chats").child(messageKey).removeValue().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                if (listener != null) listener.onSuccess();
-            } else {
-                if (listener != null) listener.onFailure(task.getException() != null ? task.getException().getMessage() : "Failed to delete message");
-            }
-        });
-    }
 
-    /**
-     * Fetches user image from database.
-     */
+
     public void getUserImage(String userId, UserImageListener listener) {
         mDatabase.child("users").child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -133,6 +128,22 @@ public class ChatManager {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 listener.onError(error.getMessage());
+            }
+        });
+    }
+
+
+
+    public void deleteMessage(String messageKey, MessageActionResultListener listener) {
+        mDatabase.child("Chats").child(messageKey).removeValue().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                if (listener != null){
+                    listener.onSuccess();
+                }
+            } else {
+                if (listener != null){
+                    listener.onFailure(task.getException() != null ? task.getException().getMessage() : "Failed to delete message");
+                }
             }
         });
     }
