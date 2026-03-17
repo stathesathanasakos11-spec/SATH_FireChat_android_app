@@ -58,6 +58,8 @@
     <string name="select_language">Επιλογή Γλώσσας</string>
     <string name="english">Αγγλικά</string>
     <string name="greek">Ελληνικά</string>
+    <string name="smart_reply_no_answer">Η υπηρεσία Smart Reply δεν βρήκε απαντήσεις!</string>
+    <string name="smart_reply_error">Η υπηρεσία Smart Reply δεν βρήκε απαντήσεις!</string>
     <string name="change_theme">Αλλαγή θέματος</string>
     <string name="select_theme">Επιλέξτε θέμα:</string>
     <string name="theme_light">Λειτουργία ημέρας</string>

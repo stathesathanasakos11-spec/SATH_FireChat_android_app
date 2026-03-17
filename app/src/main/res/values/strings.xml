@@ -58,6 +58,8 @@
     <string name="select_language">Select Language</string>
     <string name="english">English</string>
     <string name="greek">Greek</string>
+    <string name="smart_reply_no_answer">Smart reply did not find any answers!</string>
+    <string name="smart_reply_error">Smart reply did not find any answers!</string>
     <string name="change_theme">Change Theme</string>
     <string name="select_theme">Select Theme</string>
     <string name="theme_light">Light Theme</string>

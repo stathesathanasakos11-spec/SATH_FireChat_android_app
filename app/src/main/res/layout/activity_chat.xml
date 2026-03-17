@@ -53,6 +53,21 @@
         android:orientation="vertical"
         android:background="@color/chat_bar_bg">
 
+        <HorizontalScrollView
+            android:id="@+id/scrollSmartReplies"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:visibility="gone"
+            android:paddingHorizontal="8dp"
+            android:paddingTop="8dp">
+
+            <LinearLayout
+                android:id="@+id/layoutSmartReplies"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
         <LinearLayout
             android:id="@+id/layoutSend"
             android:layout_width="match_parent"
@@ -75,16 +90,24 @@
                 android:inputType="textMultiLine|textCapSentences" />
 
             <ImageButton
+                android:id="@+id/btnSmartReply"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center_vertical"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/baseline_auto_awesome_24"
+                app:tint="#BF6767" />
+            <ImageButton
                 android:id="@+id/btnSend"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_gravity="center_vertical"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@android:drawable/ic_menu_send"
-                app:tint="@color/brand_color" />
+                app:tint="#B71C1C" />
         </LinearLayout>
 
-        <!-- Dynamic spacer for Navigation Insets -->
+
         <View
             android:id="@+id/navigationBarSpacer"
             android:layout_width="match_parent"

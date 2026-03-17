@@ -6,7 +6,9 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.p22005unipifirechat.R;
+import com.example.p22005unipifirechat.interfaces.SmartReplyListener;
 import com.example.p22005unipifirechat.interfaces.IMessageActionListener;
 import com.example.p22005unipifirechat.interfaces.MessagesListener;
 import com.example.p22005unipifirechat.interfaces.MessageActionResultListener;
@@ -25,12 +28,16 @@ import com.example.p22005unipifirechat.adapters.MessageAdapter;
 import com.example.p22005unipifirechat.modelclasses.Message;
 import com.example.p22005unipifirechat.utils.AuthManager;
 import com.example.p22005unipifirechat.utils.ChatManager;
+import com.example.p22005unipifirechat.utils.SmartReplyManager;
+import com.google.android.material.chip.Chip;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 
 public class ChatActivity extends BaseActivity {
-    private ImageButton btnBack, btnSend;
+    private ImageButton btnBack, btnSend, btnSmartReply;
+    private HorizontalScrollView scrollSmartReplies;
+    private LinearLayout layoutSmartReplies;
     private EditText etMessage;
     private TextView tvChatUser;
     private RecyclerView recyclerChat;
@@ -39,6 +46,8 @@ public class ChatActivity extends BaseActivity {
     private List<Message> mChat;
     private ChatManager chatManager;
     private AuthManager authManager;
+    private SmartReplyManager smartReplyManager;
+    private SmartReplyListener smartReplyListener;
     private ValueEventListener messagesListener;
     private String otherUserId;
     private String otherUsername;
@@ -61,6 +70,7 @@ public class ChatActivity extends BaseActivity {
         chatManager = ChatManager.getInstance();
         authManager = AuthManager.getInstance();
         currentUserId = authManager.getCurrentUser().getUid();
+        smartReplyManager = SmartReplyManager.getInstance();
     }
 
     private void initIntentData() {
@@ -78,6 +88,9 @@ public class ChatActivity extends BaseActivity {
         recyclerChat = findViewById(R.id.recyclerChat);
         navigationBarSpacer = findViewById(R.id.navigationBarSpacer);
         tvChatUser.setText(otherUsername);
+        btnSmartReply = findViewById(R.id.btnSmartReply);
+        scrollSmartReplies = findViewById(R.id.scrollSmartReplies);
+        layoutSmartReplies = findViewById(R.id.layoutSmartReplies);
     }
 
     private void setupRecyclerView() {
@@ -92,6 +105,7 @@ public class ChatActivity extends BaseActivity {
     private void setupClickListeners() {
         btnBack.setOnClickListener(v -> finish());
         btnSend.setOnClickListener(v -> handleSendMessage());
+        btnSmartReply.setOnClickListener(v -> handleSmartReply());
     }
 
 
@@ -107,6 +121,59 @@ public class ChatActivity extends BaseActivity {
         } else {
             Toast.makeText(this, R.string.cannot_send_an_empty_message, Toast.LENGTH_SHORT).show();
         }
+    }
+
+
+
+
+    //δίνω στον χρήστη τα chips με τις 3 απαντήσεις
+    private void handleSmartReply() {
+        smartReplyManager.generateReplies(mChat, currentUserId, new SmartReplyListener() {
+            @Override
+            public void onRepliesGenerated(List<String> suggestions) {
+                //μπορεί να υπήρχαν απαντήσεις από πριν και τις καθαρίζω
+                layoutSmartReplies.removeAllViews();
+
+                //αν το AI δεν ξέρει τι να πει
+                if (suggestions.isEmpty()) {
+                    Toast.makeText(ChatActivity.this, R.string.smart_reply_no_answer, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // εμφάνιση της μπάρας με τις smart replies
+                scrollSmartReplies.setVisibility(View.VISIBLE);
+
+                //ένα chip για κάθε απάντηση
+                for (String reply : suggestions) {
+                    Chip chip = new Chip(ChatActivity.this);
+                    chip.setText(reply);
+                    chip.setCheckable(false);
+
+                    // Προσθήκη margin δεξιά από κάθε Chip για να μην κολλάνε μεταξύ τους
+                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT
+                    );
+                    params.setMargins(0, 0, 16, 0);
+                    chip.setLayoutParams(params);
+
+                    // αφού ο χρήστης επιλέξει απάντηση
+                    chip.setOnClickListener(v -> {
+                        etMessage.setText(reply);
+                        scrollSmartReplies.setVisibility(View.GONE);
+                    });
+
+                    // 6. Προσθέτουμε το έτοιμο Chip μέσα στο οριζόντιο Layout
+                    layoutSmartReplies.addView(chip);
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                String errorMessage = getString(R.string.smart_reply_error) + " " + error;
+                Toast.makeText(ChatActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
 
@@ -235,6 +302,10 @@ public class ChatActivity extends BaseActivity {
         super.onDestroy();
         if (messagesListener != null) {
             FirebaseDatabase.getInstance().getReference("Chats").child(currentUserId).removeEventListener(messagesListener);
+        }
+
+        if (smartReplyManager != null) {
+            smartReplyManager.close();
         }
     }
 }
