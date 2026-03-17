@@ -57,28 +57,39 @@ public class SmartReplyManager {
             }
         }
 
-        smartReplyGenerator.suggestReplies(conversation)
-                .addOnSuccessListener(result -> {
-                    if (result.getStatus() == SmartReplySuggestionResult.STATUS_NOT_SUPPORTED_LANGUAGE) {
-                        // Το ML Kit υποστηρίζει κυρίως Αγγλικά
-                        listener.onError(" ");
-                    } else if (result.getStatus() == SmartReplySuggestionResult.STATUS_SUCCESS) {
-                        List<String> replies = new ArrayList<>();
-                        for (SmartReplySuggestion suggestion : result.getSuggestions()) {
-                            replies.add(suggestion.getText());
+        try {
+            smartReplyGenerator.suggestReplies(conversation)
+                    .addOnSuccessListener(result -> {
+                        if (result.getStatus() == SmartReplySuggestionResult.STATUS_NOT_SUPPORTED_LANGUAGE) {
+                            // Το ML Kit υποστηρίζει κυρίως Αγγλικά
+                            listener.onError(" ");
+                        } else if (result.getStatus() == SmartReplySuggestionResult.STATUS_SUCCESS) {
+                            List<String> replies = new ArrayList<>();
+                            for (SmartReplySuggestion suggestion : result.getSuggestions()) {
+                                replies.add(suggestion.getText());
+                            }
+                            listener.onRepliesGenerated(replies);
+                        } else {
+                            listener.onError(" ");
                         }
-                        listener.onRepliesGenerated(replies);
-                    } else {
-                        listener.onError(" ");
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    listener.onError(e.getMessage());
-                });
+                    })
+                    .addOnFailureListener(e -> {
+                        listener.onError(e.getMessage());
+                    });
+
+        } catch (Exception e) {
+            // για να μην κρασσάρει το ChatActivity σε σφάλματατα του smartReplyGenerator
+            listener.onError(" ");
+        }
     }
 
     public void close(){
         //αποδέσμευση πόρων συστήματος όταν κλείνει η συνομιλία
-        smartReplyGenerator.close();
+        if (smartReplyGenerator != null) {
+            smartReplyGenerator.close();
+        }
+        //όταν κλείνει η chatActivity ουσιαστικά καταστρέφεται το instance του smartreplygenerator
+        // το κάνω null ώστε αν έχει καταστραφεί να το δει το Android και να το χτίσει ξανά
+        instance = null;
     }
 }
