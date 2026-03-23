@@ -58,7 +58,11 @@
     <string name="select_language">Επιλογή Γλώσσας</string>
     <string name="english">Αγγλικά</string>
     <string name="greek">Ελληνικά</string>
-    <string name="smart_reply_no_answer">Η υπηρεσία Smart Reply δεν βρήκε απαντήσεις!</string>
+    <string name="summary_title">✨Έξυπνη Περίληψη</string>
+    <string name="ai_thinking">Το AI σκέφεται ✨...</string>
+    <string name="wait_for_reply">Παρακαλώ περιμένετε να απαντήσει ο άλλος χρήστης</string>"
+    <string name="no_messages_yet">Δεν υπάρχουν μηνύματα σε αυτή τη συνομιλία!</string>
+    <string name="summary_error">Αδυναμία περίληψης περιεομένου αυτής της συνομιλίας</string>
     <string name="smart_reply_error">Η υπηρεσία Smart Reply δεν βρήκε απαντήσεις!</string>
     <string name="change_theme">Αλλαγή θέματος</string>
     <string name="select_theme">Επιλέξτε θέμα:</string>

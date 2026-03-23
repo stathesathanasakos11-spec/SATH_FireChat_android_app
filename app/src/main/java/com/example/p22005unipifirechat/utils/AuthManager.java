@@ -12,13 +12,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-// Singleton Design Pattern for AuthManager & SingleResponsibility Principle
-// μόνο ένα instance στην εφαρμογή γι επικοινωνία με το Firebase Authentication και τη Realtime Database
+//there is only one instance of AuthManager in the app
 public class AuthManager {
     private static AuthManager instance;
-    //το mAuth είναι αυτό που κρατάει την κατάσταση του χρήστη
-    // χρησιμοποιείται για το login και κρατάει τα στοιχεία του χρήστη και μετά το κλείσιμο της εφαρμογής
-    // εκτός αν ο ίδιος κάνει αποσύνδεση
+    //I use mAuth and mDatabase to communicate with Firebase's services
+    // mAuth keeps user's track session even after closing the app
+    // except user logged out
     private final FirebaseAuth mAuth;
     private final DatabaseReference mDatabase;
 
@@ -46,14 +45,14 @@ public class AuthManager {
     public void signUp(String email, String password, String username, AuthListener listener) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
-                    // ολοκληρώθηκε ο ορισμός email, username & password και έγινε η διαδικασία από τη Firebase
+                    // if email, password & username input are valid then create the new user
                     if (task.isSuccessful()) {
-                        // φτιάχνω νέο αντικείμενο τύπου FirebaseUser και παίρνω τα στοιχεία του μέσω του mAuth
+                        // I create a FirebaseUser object and get its UID
                         FirebaseUser firebaseUser = mAuth.getCurrentUser();
                         if (firebaseUser != null) {
                             String userId = firebaseUser.getUid();
 
-                            // δημιουργία νέου χρήστη στη Realtime Database και αποθήκευση
+                            //save the new user to the Realtime Database
                             User newUser = new User(userId, username, email, "default");
                             mDatabase.child("users").child(userId).setValue(newUser)
                                     .addOnCompleteListener(dbTask -> {
@@ -74,7 +73,7 @@ public class AuthManager {
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        // αν συμπλήρωσε σωστάτα στοιχεία η LoginActivity τον μεταφέρει στην MainActivity (home page)
+                        // if the user is logged in successfully then go to MainActivity
                         listener.onSuccess();
                     } else {
                         listener.onFailure(task.getException() != null ? task.getException().getMessage() : "Login Failed");
@@ -86,15 +85,15 @@ public class AuthManager {
 
 
 
-
     public void firebaseAuthWithGoogle(AuthCredential credential, AuthListener listener) {
-        // έτοιμη μέθοδος της Firebase-Google μέσω των credentials του χρήστη
+        //Firebase uses Google credentials to authenticate the user
+        // this is a Google method to authenticate the user
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user != null) {
-                            // αν είναι νέος χρήστης πρέπει να προστεθεί στη Realtime Database
+                            // if it comes for the first time, add the user to the database
                             checkAndSaveGoogleUser(user, listener);
                         } else {
                             listener.onFailure("User is null after Google Auth");
@@ -111,7 +110,7 @@ public class AuthManager {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (!snapshot.exists()) {
-                    //προσθήκη νέου χρήστη στη βάση δεδομένων
+                    //add new user to database
                     String username = firebaseUser.getDisplayName();
                     String email = firebaseUser.getEmail();
                     User newUser = new User(firebaseUser.getUid(), username, email, "simpleuser");
@@ -123,7 +122,7 @@ public class AuthManager {
                         }
                     });
                 } else {
-                    // Διαφορετικά απλά πάμε στην MainActivity από την LoginActivity
+                    // else navigate to MainActivity
                     listener.onSuccess();
                 }
             }
@@ -140,16 +139,15 @@ public class AuthManager {
 
 
 
-
-    // διαγραφή λογαριασμού χρήστη από την εφαρμογή
+    //deletion of the user account
     public void deleteUserAccount(AuthListener listener) {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
             String uid = user.getUid();
-            // διαγραφή του χρήστη με το UID του από τον κόμβο users της Realtime Database
+            // delete user from users node in Realtime database
             mDatabase.child("users").child(uid).removeValue().addOnCompleteListener(dbTask -> {
                 if (dbTask.isSuccessful()) {
-                    // διαγραφή και από το Firebase Authentication platform
+                    // also delete user from Firebase Authentication
                     user.delete().addOnCompleteListener(authTask -> {
                         if (authTask.isSuccessful()) {
                             listener.onSuccess();
@@ -167,7 +165,8 @@ public class AuthManager {
     }
 
     public void signOut() {
-        // μετά από logout δεν κρατιούνται τα στοιχεία του χρήστη στην εφαρμογή
+        // after user press logout button and confirms his choice
+        // he is signed out from the app and Firebase does not keep track of the user
         mAuth.signOut();
     }
 }

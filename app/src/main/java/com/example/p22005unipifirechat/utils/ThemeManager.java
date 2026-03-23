@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 public class ThemeManager {
     private static final String PREF_NAME = "theme_pref";
     private static final String KEY_THEME = "selected_theme";
-    // κωδικοί για κάθε theme mode
+    // custom ids for the different themes
     public static final int THEME_LIGHT = 0;
     public static final int THEME_DARK = 1;
     public static final int THEME_SYSTEM = 2;
@@ -25,7 +25,7 @@ public class ThemeManager {
 
 
     public void applyTheme(int theme) {
-        // άμεση επιβολή θέματος στα activities μέσω της BaseActivity
+        // i use this method to apply the theme to each activity before onCreate() (look at BaseActivity.java)
         switch (theme) {
             case THEME_LIGHT:
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
@@ -42,7 +42,7 @@ public class ThemeManager {
     }
 
     private void saveTheme(int theme) {
-        // ενημέρωση του αρχείου των share preferences
+        //update shared preferences with the new theme
         sharedPreferences.edit().putInt(KEY_THEME, theme).apply();
     }
 

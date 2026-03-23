@@ -5,7 +5,7 @@
 
     <color name="my_primary">#B71C1C</color>
     <color name="my_primary_variant">#7F0000</color>
-    <color name="my_background">#FDF5E6</color>
+    <color name="my_background">#FFF7F2</color>
 
     <color name="brand_color">@color/my_primary</color>
     <color name="app_background">@color/my_background</color>

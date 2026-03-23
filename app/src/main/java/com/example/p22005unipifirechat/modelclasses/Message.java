@@ -8,7 +8,7 @@ public class Message {
     public long timestamp;
     public String key;
 
-    //της Firebase
+    //Required default constructor for Firebase
     public Message() {
     }
 
@@ -26,5 +26,13 @@ public class Message {
 
     public void setKey(String key) {
         this.key = key;
+    }
+
+    public String getSenderId() {
+        return senderId;
+    }
+
+    public String getMessageText(){
+        return messageText;
     }
 }

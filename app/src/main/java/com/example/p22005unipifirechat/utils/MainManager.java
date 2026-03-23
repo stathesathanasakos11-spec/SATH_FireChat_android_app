@@ -20,7 +20,8 @@ import java.util.Map;
 public class MainManager {
     //Singleton Design Pattern
     private static MainManager instance;
-    // επικοινωνία με τη Realtime Database για διαχωρισμό επιπέδων με την MainActivity
+    // only MainManager has access to the database
+    // this way I separate the UI and the data access layers
     private final DatabaseReference mDatabase;
     //keeps track of the last message time for each user
     private final Map<String, Long> userLastMsgMap = new HashMap<>();
@@ -41,7 +42,6 @@ public class MainManager {
 
 
     public ValueEventListener observeChatList(String currentUserId, ChatListListener listener) {
-        // κόμβος ChatList στον χρήστη με το UID του
         DatabaseReference chatListRef = mDatabase.child("ChatList").child(currentUserId);
         ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
@@ -75,7 +75,7 @@ public class MainManager {
             }
         };
 
-        // άμεση ενημέρωση της MainActivity γισ την κατάστασης ενός κόμβου του chatList node
+        // immediate update of MainActivity's recyclerView for each change in the ChatList
         chatListRef.addValueEventListener(valueEventListener);
         return valueEventListener;
     }
@@ -99,7 +99,7 @@ public class MainManager {
                     }
 
                     if (userLastMsgMap.containsKey(user.uid)) {
-                        //ενημέρωση timestamp τελευταίου μηνύματος
+                        // update the timestamp of the last one message
                         user.lastMsgTime = userLastMsgMap.get(user.uid);
                     }
 
@@ -120,20 +120,19 @@ public class MainManager {
 
 
 
-    //αναζήτηση χρήστη στη realtime databse με το ακριβές username από την MainActivity
+    //find a user by his username and return his UID
     public void findUserByUsername(String username, UserSearchListener listener) {
-        // όλοι οι χρήστες σε σειρά και αναζήτηση με συγκεκριμένου username
         mDatabase.child("users").orderByChild("username").equalTo(username)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
-                            //αν βρεθεί το username κρατάω το UID του χρήστη που εμφανίστηκε πρώτη φορά
+                            // use the UID of the first user that matches the username
                             for (DataSnapshot userSnapshot : snapshot.getChildren()) {
                                 String uid = userSnapshot.getKey();
                                 String foundUsername = userSnapshot.child("username").getValue(String.class);
                                 listener.onUserFound(uid, foundUsername);
-                                return; // stop loop after first successful match
+                                return; // stop the loop after first successful match
                             }
                         } else {
                             listener.onUserNotFound();
@@ -151,7 +150,7 @@ public class MainManager {
 
 
     public void deleteChat(String currentUserId, String otherUserId, ActionResultListener listener) {
-        //αφαίρεση συνομιλίας από τη βάση για τον currentUser δοθέντων των UID των εμπλεκόμενων χρηστών
+        //remove this chat from currentUser's node using ChatList and the UIDs of the two participants of the chat
         mDatabase.child("ChatList").child(currentUserId).child(otherUserId).removeValue()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {

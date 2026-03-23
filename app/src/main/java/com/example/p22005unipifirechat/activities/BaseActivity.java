@@ -9,16 +9,18 @@ import com.example.p22005unipifirechat.utils.LanguageManager;
 import com.example.p22005unipifirechat.utils.ThemeManager;
 
 //all the activities extend "BaseActivity" that extends AppCompatActivity
-// αυτή η μέθοδος είναι ο ενδιάμεσος μεταξύ των Activities και πχ του ThemeManager ή LanguageManager
-//Αν ο χρήστης αλλάξει θέμα ενώ ήδη τρέχει την εφαρμογή, μέσω της κληρονομικότητας όλα τα
-// activities θα λάβουν την ενημέρωση του θέματος & γλώσσας από την BaseActivity
+// Base class for all activities to centralize common logic like theme and language switching.
+// If the user changes the settings while the app is running, the inheritance ensures that all
+// activities apply the new configuration globally
 public abstract class BaseActivity extends AppCompatActivity {
+    //BaseActivity is a middleware between Activities and Managers
     protected LanguageManager languageManager;
     protected ThemeManager themeManager;
 
-    // καλείται από τη setLocale() στην LanguageManager και θέτει την αλλαγή στις προτιμήσεις του χρήστη στο Locale
+
     @Override
     protected void attachBaseContext(Context newBase) {
+        //LanguageManager.setLocale() calls this method to set the language context
         languageManager = new LanguageManager(newBase);
         // Apply the saved (by user) language context
         super.attachBaseContext(languageManager.setLocale(newBase));

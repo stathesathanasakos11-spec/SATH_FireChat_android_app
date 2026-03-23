@@ -38,15 +38,14 @@ public class LoginActivity extends BaseActivity {
     private TextView tvToggle, tvTitle;
     private ProgressBar progressBar;
     private static final int RC_SIGN_IN = 9001;
-
     private GoogleSignInClient mGoogleSignInClient;
-    //φτιάχνω ένα AuthManager object για το Firebase Authentication εκεί και να κρατήσω την Activity απλή
+    //use an AuthManager instance to communicate with Firebase
     private AuthManager authManager;
     private boolean isSignUp = true;
 
     @Override
     protected void attachBaseContext(Context newBase) {
-        // ορισμός γλώσσας και θέματος ξανά εφόσον ο χρήστης άλλαξε τις προτιμήσεις του στο profile screen του
+        // set the language and the theme based on the user's preferences if he changed it after the app was launched
         super.attachBaseContext(newBase);
     }
 
@@ -67,7 +66,7 @@ public class LoginActivity extends BaseActivity {
         tvTitle = findViewById(R.id.tvTitle);
         progressBar = findViewById(R.id.progressBar);
 
-        // vibration για το login και το register
+        // vibration effect on the buttons (login & sign-up)
         authButton.setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
@@ -82,9 +81,8 @@ public class LoginActivity extends BaseActivity {
             return false;
         });
 
-        // παίρνω τα στοιχεία και το μοναδικό Id του google χρήστη για το sing-in/sing-up
-        // το web_cilent_id είναι το token σύνδεσης του project με το project στη Firebase
-        // για να ξέρει έτσι η εφαρμογή και το Google με ποια ΒΔ συνομιλεί
+        // Get user info and Google UID for authentication
+        // web_client_id links the app with the Firebase project to authorize DB communication
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
@@ -117,7 +115,8 @@ public class LoginActivity extends BaseActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        // αν υπάρχει ο χρήστης και δεν είναι null τότε πάμε στο Home page - MainActivity
+        //if user is already logged in, go to MainActivity
+        // Firebase recognizes the device and the logged-in user
         if (authManager.getCurrentUser() != null) {
             goToMainActivity();
         }
@@ -126,7 +125,7 @@ public class LoginActivity extends BaseActivity {
 
 
 
-    // ποια φόρμα θα εμφανιστεί (login ή sign-up)
+    // which form will appear in the screen (login or sign-up)
     private void toggleMode() {
         isSignUp = !isSignUp;
         View tilUsername = findViewById(R.id.tilUsername);
@@ -156,7 +155,7 @@ public class LoginActivity extends BaseActivity {
         if (!validateUsersInput(email, password, username)) return;
         setLoading(true);
 
-        //κλήση του AuthManager για την επικοινωνία με τη Firebase και από εκεί καθορίζεται τι γίνεται για επιτυχία/αποτυχία
+        //AuthManager is the one that decides if the user is logged in or not by communicating with Firebase
         AuthListener listener = new AuthListener() {
             @Override
             public void onSuccess() {
@@ -171,7 +170,7 @@ public class LoginActivity extends BaseActivity {
             }
         };
 
-        // καλώ τις μεθόδους της Firebase για login ή register με τα απαραίτητα credentials
+        // use the proper AuthManager's method either to login or to sign-up in the app
         if (isSignUp) {
             authManager.signUp(email, password, username, listener);
         } else {
@@ -180,9 +179,8 @@ public class LoginActivity extends BaseActivity {
     }
 
     private boolean validateUsersInput(String email, String password, String username){
-        //χρησιμοποιώ την isEmpty() της TextUtils για τον έλεγχο κειμένου
-        // η Petterns library του android έχει τα regular expressions και ελέγχω με αυτά το input του χρήστη
-        // πχ αν για τον EMAIL_ADDRESS το input είναι x...@y.z τότε θα επιστρέψει TRUE
+        // user's input validation check using TextUtils class
+        // Patterns.EMAIL_ADDRESS uses regex to verify that the user's input follows a valid email structure
         if (TextUtils.isEmpty(email) || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             etEmail.setError(getString(R.string.valid_email_required));
             return false;
@@ -205,7 +203,7 @@ public class LoginActivity extends BaseActivity {
 
     private void signInWithGoogle() {
         setLoading(true);
-        // ανοίγω το Intent της Google για περιπτώσεις sign-in
+        // call Google voice intent to sign in with Google account
         mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
             Intent signInIntent = mGoogleSignInClient.getSignInIntent();
             startActivityForResult(signInIntent, RC_SIGN_IN);
@@ -214,13 +212,16 @@ public class LoginActivity extends BaseActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // μέθοδος για το Google authentication
+        //This callback is triggered automatically when the Google Sign-In activity finishes
         super.onActivityResult(requestCode, resultCode, data);
+        // RC_SIGN_IN is a unique number to let android know which activity/energy just finished
         if (requestCode == RC_SIGN_IN) {
+            // Retrieve the signed-in account details from the returned Intent data
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
-                // αν η google δώσει το OK τότε δημιουργείται ένα token
+                // google gives permission to Firebase to create an UID for the user
                 GoogleSignInAccount account = task.getResult(ApiException.class);
+                // send the UID to Firebase to authenticate the user
                 firebaseAuthWithGoogle(account.getIdToken());
             } catch (ApiException e) {
                 setLoading(false);
@@ -230,7 +231,7 @@ public class LoginActivity extends BaseActivity {
     }
 
     private void firebaseAuthWithGoogle(String idToken) {
-        // στέλνω το token του χρήστη στη Firebase για να προχωρήσει η διαδικασία & επικοινωνία με τη Firebase
+        // use AuthManager to send user's UID in Firebase
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
         authManager.firebaseAuthWithGoogle(credential, new AuthListener() {
             @Override
@@ -252,7 +253,7 @@ public class LoginActivity extends BaseActivity {
 
 
     private void setLoading(boolean isLoading) {
-        // για να μην πατηθεί το κουμπί πολλές φορές κάνω ένα εφέ φόρτωσης
+        // show a loading effect so that the user cannot press the button again and again
         if (progressBar != null) {
             progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
         }

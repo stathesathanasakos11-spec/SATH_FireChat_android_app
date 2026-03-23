@@ -20,7 +20,7 @@ import com.example.p22005unipifirechat.modelclasses.User;
 public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> {
     private Context context;
     private List<User> userList;
-    // interface ανάθεσης ενέργειας του "κλικ" σε κάποιο χρήστη-συνομιλία
+    //interface to communicate with the activity
     private IUsersActionListener listener;
 
     public UsersAdapter(Context context, List<User> userList, IUsersActionListener listener) {
@@ -32,8 +32,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     @NonNull
     @Override
     public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        //το viewHolder δημιουργείται μια φορά και είναι ένα πρότυπο που κρατά στη μνήμη τα ids των views
-        // για να μην πρέπει κάθε φορά για ένα νέο στοιχείο του recyclerView να κάνω ξανά αναζήτηση
         View view = LayoutInflater.from(context).inflate(R.layout.item_user_row, parent, false);
         return new UserViewHolder(view);
     }
@@ -43,11 +41,11 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         User currentUser = userList.get(position);
-        //τοποθέτηση στοιχείων βάσης στα αντίστοιχα xml πεδία του viewHolder
+        //set the username and the avatar of the user in the item layout
         holder.tvUsername.setText(currentUser.username);
         AvatarUtils.setAvatar(holder.imgUserAvatar, currentUser.imageUrl);
 
-        // οποιοδήποτε κλικ στην κάρτα ανοίγει ένα chat activity με τον currentUser
+        // Clicking anywhere on the item opens a chat activity with this specific user (currentUser)
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -57,7 +55,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             }
         });
 
-        //κουμπί διαγραφής holder με έναν currentUser
+
         holder.btnDeleteChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -71,13 +69,15 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
     @Override
     public int getItemCount() {
-        //πόσοι χρήστες συνομίλησαν με τον συνδεδεμένο χρήστη
+        // userList contains the number of users that currentUser has a chat with
         return userList.size();
     }
 
 
 
-    // καθορίζω τα στοιχεία του viewHolder για τις συνομιλίες με τους χρήστες
+    // UI container for chat message items in the RecyclerView
+    //viewHolder actually holds the references to the views in the item layout
+    //so that not to search for them every time sth new appears on the screen
     public static class UserViewHolder extends RecyclerView.ViewHolder {
         public TextView tvUsername;
         public ImageView imgUserAvatar;

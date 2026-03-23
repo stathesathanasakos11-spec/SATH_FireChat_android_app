@@ -10,10 +10,9 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         
-        // Apply the saved theme preference globally when the app process starts
-        // η κλάση τρέχει μία φορά (singleton) καθε φορά που ξεκινάει η εφαρμογή
-        // και τερματίζει μόλις κλείσει η εφαρμογή, οπότε ότι ορίζεται εδώ δημιουργείται ήδη από
-        //την έναρξη της εφαρμογής
+        //Apply the saved theme preference globally when the app process starts
+        // this is called in the onCreate method of the application class
+        // so that the theme is applied when the app is launched
         ThemeManager themeManager = new ThemeManager(this);
         themeManager.applyTheme();
     }

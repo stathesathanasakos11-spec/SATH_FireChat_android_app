@@ -10,6 +10,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -49,6 +51,22 @@ public class MainActivity extends BaseActivity {
     private String currentUserId;
     private ValueEventListener chatListListener;
 
+    // to save the currently open alertDialog after screen rotation
+    private static final String KEY_OPEN_DIALOG = "key_open_dialog";
+    private static final String KEY_SELECTED_CHAT_UID = "key_selected_chat_uid";
+    private static final String KEY_SELECTED_CHAT_USERNAME = "key_selected_chat_username";
+    private static final int DIALOG_NONE = 0;
+    private static final int DIALOG_LOGOUT = 1;
+    private static final int DIALOG_DELETE_CHAT = 2;
+    private static final int DIALOG_NEW_CHAT = 3;
+    private int currentlyOpenDialog = DIALOG_NONE;  //set currently open dialog to none by default
+    //selected chat information
+    private String selectedChatUid;
+    private String selectedChatUsername;
+    // reference to the currently open dialog
+    private AlertDialog activeDialog;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,6 +85,14 @@ public class MainActivity extends BaseActivity {
         setupRecyclerView();
         setupClickListeners();
         observeChats();
+
+        //to show again the active dialog after screen rotation
+        if (savedInstanceState != null) {
+            currentlyOpenDialog = savedInstanceState.getInt(KEY_OPEN_DIALOG, DIALOG_NONE);
+            selectedChatUid = savedInstanceState.getString(KEY_SELECTED_CHAT_UID);
+            selectedChatUsername = savedInstanceState.getString(KEY_SELECTED_CHAT_USERNAME);
+            restoreDialogState();
+        }
     }
 
     private void setupEdgeToEdge() {
@@ -109,7 +135,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void setupRecyclerView() {
-        //μετά από τις αρχικοποίησεις ορίζω και τον Adapter για το RecyclerView
+        //adapter for the recyclerView
         recyclerViewChats.setHasFixedSize(true);
         recyclerViewChats.setLayoutManager(new LinearLayoutManager(this));
         userList = new ArrayList<>();
@@ -134,18 +160,43 @@ public class MainActivity extends BaseActivity {
     }
 
 
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(KEY_OPEN_DIALOG, currentlyOpenDialog);
+        outState.putString(KEY_SELECTED_CHAT_UID, selectedChatUid);
+        outState.putString(KEY_SELECTED_CHAT_USERNAME, selectedChatUsername);
+    }
+
+
+    private void restoreDialogState() {
+        if (currentlyOpenDialog == DIALOG_LOGOUT) {
+            showLogoutDialog();
+        } else if (currentlyOpenDialog == DIALOG_DELETE_CHAT) {
+            if (selectedChatUid != null && selectedChatUsername != null) {
+                User user = new User();
+                user.uid = selectedChatUid;
+                user.username = selectedChatUsername;
+                showDeleteChatDialog(user);
+            }
+        } else if (currentlyOpenDialog == DIALOG_NEW_CHAT) {
+            showNewChatDialog();
+        }
+    }
 
 
 
-    // μέσω του ChatListListener interface λαμβάνω όλες τις συνομιλίες του currentUser από τον MainManager
+
+
+    // access all the chats of currentUser via the ChatListListener interface (through MainManager)
     private void observeChats() {
         chatListListener = mainManager.observeChatList(currentUserId, new ChatListListener() {
             @Override
             public void onChatListUpdated(List<User> users) {
                 tvEmptyState.setVisibility(View.GONE);
                 recyclerViewChats.setVisibility(View.VISIBLE);
-                userList.clear(); // καθάρισμα λίστας
-                // άμεση δημιουργία της ξανά για σωστά ενημερωμένη εμφάνιση συνομιλιών χρονολογικά
+                userList.clear(); // clean the list before adding new items
+                //add the new items to the list and notify the adapter to show these items
                 userList.addAll(users);
                 usersAdapter.notifyDataSetChanged();
             }
@@ -168,14 +219,25 @@ public class MainActivity extends BaseActivity {
 
 
 
-    // αποσύνδεση currentUser
+    // currentUser logout method
     private void showLogoutDialog() {
-        new AlertDialog.Builder(this)
+        currentlyOpenDialog = DIALOG_LOGOUT;
+
+        activeDialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.logout_title)
                 .setMessage(R.string.logout_confirmation)
                 .setPositiveButton(R.string.yes, (dialog, which) -> handleLogout())
                 .setNegativeButton(R.string.no, null)
-                .show();
+                .create();
+
+        //when alertDialog is dismissed, set currentlyOpenDialog to none
+        // so that no dialog is open
+        activeDialog.setOnDismissListener(dialog -> {
+            currentlyOpenDialog = DIALOG_NONE;
+            activeDialog = null;
+        });
+
+        activeDialog.show();
     }
 
     private void handleLogout() {
@@ -197,7 +259,13 @@ public class MainActivity extends BaseActivity {
 
 
     private void showDeleteChatDialog(User user) {
-        new AlertDialog.Builder(MainActivity.this)
+        //selected chat information to delete
+        //using the selected chat's user UID and his username
+        selectedChatUid = user.uid;
+        selectedChatUsername = user.username;
+        currentlyOpenDialog = DIALOG_DELETE_CHAT;
+
+        activeDialog = new AlertDialog.Builder(MainActivity.this)
                 .setTitle(R.string.delete_chat_title)
                 .setMessage(getString(R.string.delete_chat_confirmation, user.username))
                 .setPositiveButton(R.string.yes, (dialog, which) -> {
@@ -214,14 +282,27 @@ public class MainActivity extends BaseActivity {
                     });
                 })
                 .setNegativeButton(R.string.no, null)
-                .show();
+                .create();
+
+        //when alertDialog is dismissed, set currentlyOpenDialog to none
+        // so that no dialog is open
+        activeDialog.setOnDismissListener(dialog -> {
+            currentlyOpenDialog = DIALOG_NONE;
+            selectedChatUid = null;
+            selectedChatUsername = null;
+            activeDialog = null;
+        });
+
+        activeDialog.show();
     }
 
 
 
 
-    //  αναζήτηση χρήστη και έναρξη συνομιλίας
+    // search for a user by username to start a new conversation
     private void showNewChatDialog() {
+        currentlyOpenDialog = DIALOG_NEW_CHAT;
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.new_chat);
         builder.setMessage(R.string.enter_username_for_new_chat);
@@ -233,9 +314,11 @@ public class MainActivity extends BaseActivity {
         builder.setPositiveButton(R.string.chat, (dialog, which) -> {
             String usernameInput = input.getText().toString().trim();
             if (!usernameInput.isEmpty()) {
+                //mainManager is used to search for a user by username because it communicates with the Realtime Database
                 mainManager.findUserByUsername(usernameInput, new UserSearchListener() {
                     @Override
                     public void onUserFound(String uid, String username) {
+                        //if the user is found, open the chat activity using his username and his UID
                         openChatActivity(uid, username);
                     }
 
@@ -252,7 +335,15 @@ public class MainActivity extends BaseActivity {
             }
         });
         builder.setNegativeButton(R.string.cancel, (dialog, which) -> dialog.cancel());
-        builder.show();
+
+        activeDialog = builder.create();
+
+        activeDialog.setOnDismissListener(dialog -> {
+            currentlyOpenDialog = DIALOG_NONE;
+            activeDialog = null;
+        });
+
+        activeDialog.show();
     }
 
 
@@ -267,7 +358,12 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
-        //αποδέσμευση ValueEventListener για εξοικονόμηση πόρων
+        if (activeDialog != null && activeDialog.isShowing()) {
+            activeDialog.dismiss();
+        }
+        activeDialog = null;
+
+        //release the listener to save resources
         super.onDestroy();
         if (chatListListener != null) {
             FirebaseDatabase.getInstance().getReference("ChatList").child(currentUserId).removeEventListener(chatListListener);

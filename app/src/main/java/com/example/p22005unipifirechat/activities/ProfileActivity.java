@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -46,6 +47,18 @@ public class ProfileActivity extends BaseActivity {
     private ThemeManager themeManager;
     private String currentUserId;
 
+    //to save alertDialogs state during-after screen rotation
+    private static final String KEY_OPEN_DIALOG = "key_open_dialog";
+    private static final int DIALOG_NONE = 0;
+    private static final int DIALOG_DELETE_ACCOUNT = 1;
+    private static final int DIALOG_LANGUAGE = 2;
+    private static final int DIALOG_THEME = 3;
+    private int currentlyOpenDialog = DIALOG_NONE; // active dialog's code
+
+    private AlertDialog activeDialog;   // reference to the currently active dialog
+
+
+
     @Override
     protected void attachBaseContext(Context newBase) {
         languageManager = new LanguageManager(newBase);
@@ -63,10 +76,23 @@ public class ProfileActivity extends BaseActivity {
         initViews();
         setupClickListeners();
         loadProfileData();
+
+        if (savedInstanceState != null) {
+            //reset the currently open dialog
+
+            restoreDialogState(savedInstanceState);
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        //find which dialog is open during screen's rotation and save its state
+        super.onSaveInstanceState(outState);
+        outState.putInt(KEY_OPEN_DIALOG, currentlyOpenDialog);
     }
 
     private void setupEdgeToEdge() {
-        //για κάθε Activity το περιεχόμενο δεν πρέπει να κρύβεται πίσω από τα status bars
+        //every Activity's content will be edge-to-edge
         View toolbar = findViewById(R.id.toolbar);
         if (toolbar != null) {
             ViewCompat.setOnApplyWindowInsetsListener(toolbar, (v, insets) -> {
@@ -111,15 +137,28 @@ public class ProfileActivity extends BaseActivity {
 
 
 
+    private void restoreDialogState(Bundle savedInstanceState) {
+        //helper method to restore the currently open dialog
+        int openDialog = savedInstanceState.getInt(KEY_OPEN_DIALOG, DIALOG_NONE);
+
+        if (openDialog == DIALOG_DELETE_ACCOUNT) {
+            showDeleteAccountConfirmation();
+        } else if (openDialog == DIALOG_LANGUAGE) {
+            showLanguageSelectionDialog();
+        } else if (openDialog == DIALOG_THEME) {
+            showThemeSelectionDialog();
+        }
+    }
 
 
 
-    // παίρνω τασ δεδομένα από τον ProfileManager γιατί εκεί επικοινωνεί με τη ΒΔ
+
+    // only ProfileManager can load the user's profile from the database. NOT this Activity
     private void loadProfileData() {
         profileManager.loadUserProfile(currentUserId, new UserProfileListener() {
             @Override
             public void onProfileLoaded(User user) {
-                // βάζω τα δεδομένα που ανάκτησα στα views πεδία
+                // set values in the proper UI fields
                 tvEmail.setText(user.email);
                 etUsername.setText(user.username);
                 if (user.imageUrl != null) {
@@ -142,8 +181,8 @@ public class ProfileActivity extends BaseActivity {
             return;
         }
 
-        // κάνει ο ProfileManager την ενημέρωση της realtime database
-        // επιστρέφει η εφαρμογή εδώ για να εμφανίζει το κατάλληλο μήνυμα
+        //after profileManager handles the updates in the database
+        // app returns to the Activity that called it
         profileManager.updateProfile(currentUserId, newUsername, selectedAvatarId, new ProfileUpdateListener() {
             @Override
             public void onSuccess() {
@@ -163,24 +202,32 @@ public class ProfileActivity extends BaseActivity {
 
 
 
-    // διαγραφή προφίλ χρήστη από την εφαρμογή
+    // user's account deletion from Firebase
     private void showDeleteAccountConfirmation() {
-        new AlertDialog.Builder(this)
+        currentlyOpenDialog = DIALOG_DELETE_ACCOUNT;
+
+        activeDialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.delete_account)
                 .setMessage(R.string.delete_account_confirmation)
                 .setPositiveButton(R.string.yes, (dialog, which) -> handleDeleteAccount())
                 .setNegativeButton(R.string.no, null)
-                .show();
+                .create();
+
+        activeDialog.setOnDismissListener(dialog -> {
+            currentlyOpenDialog = DIALOG_NONE;
+            activeDialog = null;
+        });
+
+        activeDialog.show();
     }
 
     private void handleDeleteAccount() {
-        // ανακατεύθυνση στον AuthManager για τη διαγραφή του χρήστη από το Firebase Authentication
-        // μόνο ο AuthManager έχει πρόσβαση στη ΒΔ
+        // AuthManager is used to delete the user's account from Firebase Authentication
         authManager.deleteUserAccount(new AuthListener() {
             @Override
             public void onSuccess() {
                 Toast.makeText(ProfileActivity.this, R.string.account_deleted_successfully, Toast.LENGTH_SHORT).show();
-                // και πάει τον χρήστη στο auth screen ξανά
+                // navigate to the login screen again
                 navigateToLogin();
             }
 
@@ -202,45 +249,79 @@ public class ProfileActivity extends BaseActivity {
 
 
 
-    // επιλογή γλώσσας εφαρμογής
+    // user language selection
     private void showLanguageSelectionDialog() {
         String[] languages = {getString(R.string.english), getString(R.string.greek)};
         String[] languageCodes = {"en", "el"};
 
-        new AlertDialog.Builder(this)
+        currentlyOpenDialog = DIALOG_LANGUAGE;
+
+        activeDialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.select_language)
                 .setItems(languages, (dialog, which) -> {
                     String selectedCode = languageCodes[which];
-                    // μόνο η LnaguageManager μπορεί να επέμβει στις ρυθμίσεις των shared preferences απευθείας
+
+                    currentlyOpenDialog = DIALOG_NONE;
+                    activeDialog = null;
+
+                    // languageManager has access to shared preferences
                     languageManager.updateResource(this, selectedCode);
-                    // ανακατεύθυνση στη MainActivity (home screen) για να εμφανιστεί η νέα γλώσσα
+
+                    // I recreate this activity and load the proper strings resources
+                    recreate();
+
+                    /*
+                    // navigate to MainActivity as string resources have been updated
                     Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish();
+                    */
+
                 })
-                .show();
+                .create();
+
+        activeDialog.setOnDismissListener(dialog -> {
+            currentlyOpenDialog = DIALOG_NONE;
+            activeDialog = null;
+        });
+
+        activeDialog.show();
     }
 
 
 
 
-    // αλλαγή θέματος εφαρμογής
+    // theme selection
     private void showThemeSelectionDialog() {
-        // από τα string resources για να υποστηρίζονται πολλές γλώσσες
+        //use string resources for the theme names instead of hardcoded strings
         String[] themes = {
                 getString(R.string.theme_light),
                 getString(R.string.theme_dark),
                 getString(R.string.theme_system)
         };
 
-        new AlertDialog.Builder(this)
+        currentlyOpenDialog = DIALOG_THEME;
+
+        activeDialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.select_theme)
                 .setItems(themes, (dialog, which) -> {
-                    // μόνο η ThemeManager έχει απευθείας πρόσβαση στην αλλαγή θέματος εφαρμογής
+                    // user completed the theme selection
+                    // reset the currently open dialog so that not another dialog is opened while recreating teh Activity
+                    currentlyOpenDialog = DIALOG_NONE;
+                    activeDialog = null;
+
+                    // only ThemeManager has the right to change the app's theme
                     themeManager.applyTheme(which); // 0: Light, 1: Dark, 2: System
                 })
-                .show();
+                .create();
+
+        activeDialog.setOnDismissListener(dialog -> {
+            currentlyOpenDialog = DIALOG_NONE;
+            activeDialog = null;
+        });
+
+        activeDialog.show();
     }
 
 
@@ -255,10 +336,10 @@ public class ProfileActivity extends BaseActivity {
         builder.setView(dialogView);
 
         AlertDialog dialog = builder.create();
-        // για επιλογή στοιχείων από το grid που φτιάχνω παρακάτω
+        // use a grid to display the avatars. User can select one of them
         GridLayout grid = dialogView.findViewById(R.id.gridLayoutAvatars);
 
-        // τα εικονίδια από τo res/drawable
+        // avatars placed in res-drawable
         int[] avatarDrawables = {
                 R.drawable.man1, R.drawable.man2, R.drawable.man3,
                 R.drawable.simpleuser, R.drawable.woman1, R.drawable.woman2
@@ -268,7 +349,7 @@ public class ProfileActivity extends BaseActivity {
                 "man1", "man2", "man3", "simpleuser", "woman1", "woman2"
         };
 
-        // ένα grid με τα εικονίδια στη σειρά για να επιλέξει ο χρήστης
+        // avatars placed one by one in the grid
         for (int i = 0; i < avatarDrawables.length; i++) {
             final int resId = avatarDrawables[i];
             final String avatarIdName = avatarNames[i];
@@ -284,7 +365,7 @@ public class ProfileActivity extends BaseActivity {
 
             iv.setOnClickListener(v -> {
                 selectedAvatarId = avatarIdName;
-                //λέω AvatarUtils να εμφανίσει το εικονίδιο που επιλέγει ο χρήστης
+                //avatarUtils is used to set the avatar in the UI
                 AvatarUtils.setAvatar(imgProfile, selectedAvatarId);
                 dialog.dismiss();
             });
@@ -292,5 +373,19 @@ public class ProfileActivity extends BaseActivity {
             grid.addView(iv);
         }
         dialog.show();
+    }
+
+
+
+
+    @Override
+    protected void onDestroy() {
+        //close the active dialog if it is still open
+        // because the activity is now destroyed
+        if (activeDialog != null && activeDialog.isShowing()) {
+            activeDialog.dismiss();
+        }
+        activeDialog = null;
+        super.onDestroy();
     }
 }

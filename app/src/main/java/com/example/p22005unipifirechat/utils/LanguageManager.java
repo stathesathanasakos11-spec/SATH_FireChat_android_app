@@ -16,26 +16,25 @@ public class LanguageManager {
         this.sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
-    //αποθηκεύω την επιλογή του χρήστη όταν κάνει αλλαγή στην Profile Activity
-    // και ενημερώνω τα resources της εφαρμογής στη συσκευή
+    // after user changes the language by settings (on ProfileActivity) the new language has to be applied immediately
     public void updateResource(Context context, String code) {
         saveLanguage(code);
         updateResources(context, code);
     }
 
 
-    // ενημερώνω το Locale και την καλώ μέσω της BaseActivity για κάθε activity της οθόνης
+    // I call this method from BaseActivity.java to update string resources before onCreate() method (for each Activity)
     public Context setLocale(Context context) {
         return updateResources(context, getLanguage());
     }
 
 
 
-    // καθορίζω ποιο string.xml file θα χρησιμοποιηθεί
+    // select the string .xml file according to the selected language
     private Context updateResources(Context context, String language) {
         Locale locale = new Locale(language);
         Locale.setDefault(locale);
-        // από τα res της εφαρμογής
+        // extract from the resources
         Resources res = context.getResources();
         Configuration config = new Configuration(res.getConfiguration());
 
@@ -43,7 +42,7 @@ public class LanguageManager {
             config.setLocale(locale);
             return context.createConfigurationContext(config);
         } else {
-            // για παλιές εκδόσεις android
+            // for older Android versions
             config.locale = locale;
             res.updateConfiguration(config, res.getDisplayMetrics());
             return context;
@@ -52,7 +51,7 @@ public class LanguageManager {
 
 
     public void saveLanguage(String code) {
-        // κάθε γλώσσα έχει κωδικό πχ en, el, fr
+        // each language has its unique code (e.g. en, gr)
         sharedPreferences.edit().putString(KEY_LANG, code).apply();
     }
 

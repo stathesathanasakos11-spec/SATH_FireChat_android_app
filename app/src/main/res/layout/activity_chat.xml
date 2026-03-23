@@ -53,6 +53,53 @@
         android:orientation="vertical"
         android:background="@color/chat_bar_bg">
 
+        <LinearLayout
+            android:id="@+id/layoutSummary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/app_background"
+            android:padding="12dp"
+            android:visibility="gone"
+            android:elevation="4dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/app_background"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/summary_title"
+                    android:textStyle="bold"
+                    android:textColor="#B74A4A"
+                    android:textSize="14sp"
+                    android:layout_centerVertical="true"/>
+
+                <ImageButton
+                    android:id="@+id/btnCloseSummary"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                    app:tint="@color/primary_text" />
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/tvSummaryText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/card_surface"
+                android:textColor="@color/other_text_color"
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"
+                android:text="..." />
+        </LinearLayout>
+
         <HorizontalScrollView
             android:id="@+id/scrollSmartReplies"
             android:layout_width="match_parent"
@@ -90,13 +137,13 @@
                 android:inputType="textMultiLine|textCapSentences" />
 
             <ImageButton
-                android:id="@+id/btnSmartReply"
+                android:id="@+id/btnAi"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_gravity="center_vertical"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/baseline_auto_awesome_24"
-                app:tint="#BF6767" />
+                app:tint="#B74A4A" />
             <ImageButton
                 android:id="@+id/btnSend"
                 android:layout_width="48dp"

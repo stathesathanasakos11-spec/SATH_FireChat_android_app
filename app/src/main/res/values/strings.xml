@@ -58,7 +58,11 @@
     <string name="select_language">Select Language</string>
     <string name="english">English</string>
     <string name="greek">Greek</string>
-    <string name="smart_reply_no_answer">Smart reply did not find any answers!</string>
+    <string name="summary_title">✨AI Summary</string>
+    <string name="no_messages_yet">No messages yet</string>
+    <string name="ai_thinking">AI is thinking ✨...</string>
+    <string name="wait_for_reply">Please wait for the other user to reply</string>
+    <string name="summary_error">Failed to generate summary for this chat</string>
     <string name="smart_reply_error">Smart reply did not find any answers!</string>
     <string name="change_theme">Change Theme</string>
     <string name="select_theme">Select Theme</string>

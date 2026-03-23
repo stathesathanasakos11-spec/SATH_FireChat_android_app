@@ -22,7 +22,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     private Context context;
     private List<Message> mChat;
     private String imageUrl;
-    // υπάρχει interface για κάποιες λειτουργίες για να ακολουθεί ο adapter την αρχή SRP
+    // use an interface to communicate with the activity
     private IMessageActionListener listener;
     FirebaseUser fuser;
 
@@ -37,7 +37,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     @NonNull
     @Override
     public MessageAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // σε ποιο xml (δεξιά-αριστερά) θα πασάρω τα δεδομένα του μηνύματος με τον recyclerView
+        // decide which xml file to inflate based on the UID of the sender
         if (viewType == MSG_TYPE_RIGHT) {
             View view = LayoutInflater.from(context).inflate(R.layout.item_chat_right, parent, false);
             return new ViewHolder(view);
@@ -54,8 +54,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         holder.show_message.setText(chat.messageText);
 
         if (getItemViewType(position) == MSG_TYPE_LEFT && holder.imgChatAvatar != null) {
-            //εικόνα του συνομιλητή δίπλα στο μήνυμα του
-            // χρησιμοποιώ την setAvatar() της AvatarsUtil
+            // use the AvatarUtils class to set user's avatar
+            // next to his message layout
             holder.imgChatAvatar.setVisibility(View.VISIBLE);
             AvatarUtils.setAvatar(holder.imgChatAvatar, imageUrl);
         }
@@ -80,7 +80,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
 
 
-
     public static class ViewHolder extends RecyclerView.ViewHolder{
         public TextView show_message;
         public ImageView imgChatAvatar;
@@ -92,12 +91,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         }
     }
 
-    //ελέγχω αν το μήνυμα το έστειλε ο άλλος ή ο currentUser
-    // κάθε μήνυμα θα εμφανίζεται δεξιά-αριστερά ανάλογα με τον τύπο του
+
+    // this method is used to decide which xml file to inflate
+    //it is called whenever the adapter needs to create a new ViewHolder (while scrolling)
     @Override
     public int getItemViewType(int position) {
         fuser = FirebaseAuth.getInstance().getCurrentUser();
-        //
+        //check if the message is from the current user or not
         if (fuser != null && mChat.get(position).senderId.equals(fuser.getUid())){
             return MSG_TYPE_RIGHT;
         } else {

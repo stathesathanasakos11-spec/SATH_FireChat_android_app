@@ -20,7 +20,7 @@ public class ProfileManager {
     private final DatabaseReference mDatabase;
 
     private ProfileManager() {
-        //απευθείας σύνδεση με τον κόμβο users στη Realtime database
+        // immediate connection to users node in the database
         mDatabase = FirebaseDatabase.getInstance().getReference("users");
     }
 
@@ -36,14 +36,14 @@ public class ProfileManager {
 
 
     public void loadUserProfile(String userId, UserProfileListener listener) {
-        //πρόσβαση απευθείας στο κόμβο του χρήστη στη βάση δεδομένων
+        //go to user's node and get his data
         mDatabase.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
-            //όταν αλλάζουν τα δεδομένα του χρήστη (πχ avatar/username)
+            // when user data changes
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 User user = snapshot.getValue(User.class);
                 if (user != null) {
-                    //φορτώνω όλα τα στοιχεία του χρήστη και το χρησιμοποιώ στο Activity
+                    //send all the user's data to the ProfileActivity to display it
                     listener.onProfileLoaded(user);
                 } else {
                     listener.onError("User data not found");

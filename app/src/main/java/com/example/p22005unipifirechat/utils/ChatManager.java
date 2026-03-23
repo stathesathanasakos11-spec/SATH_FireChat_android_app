@@ -33,15 +33,14 @@ public class ChatManager {
 
 
 
-    // ενημέρωση realtime database με το νέο μήνυμα
     public void sendMessage(String senderId, String receiverId, String messageText, MessageActionResultListener listener) {
-        // προσθήκη μηνύματος στο Chats node
+        // add the new message to the Chats node
         DatabaseReference newMsgRef = mDatabase.child("Chats").push();
         String messageId = newMsgRef.getKey();
 
         HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("senderId", senderId);  // αποστολέας
-        hashMap.put("receiverId", receiverId); // παραλήπτης
+        hashMap.put("senderId", senderId);  //sender
+        hashMap.put("receiverId", receiverId); //receiver
         hashMap.put("messageText", messageText);
         hashMap.put("timestamp", System.currentTimeMillis());
         hashMap.put("key", messageId);
@@ -61,8 +60,7 @@ public class ChatManager {
         });
     }
 
-
-    // ενημέρωση κόμβου ChatList που έχει για τον καθένα σε ποιους έστειλε μήνυμα και πότε (πιο πρόσφατο μήνυμα)
+    // also update the ChatList node (it has data about the last message that user A sends to other users etc)
     private void updateChatList(String senderId, String receiverId) {
         long currentTime = System.currentTimeMillis();
         // Update ChatList node for sender
@@ -79,7 +77,7 @@ public class ChatManager {
 
 
     public ValueEventListener listenForMessages(String myId, String otherUserId, MessagesListener listener) {
-        // ελέγχος αν υπάρχει μήνυμα μόνο μεταξύ των 2 συνομιλητών
+        // check if the message is from one of the two users and add it to the list
         DatabaseReference reference = mDatabase.child("Chats");
         ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
@@ -89,7 +87,7 @@ public class ChatManager {
                     Message chat = snapshot.getValue(Message.class);
                     if (chat != null) {
                         chat.setKey(snapshot.getKey());
-                        //αν το μήνυμα ανήκει στον sender ή τον receiver τότε το προσθέτω στη λίστα που θα δείξει ο recyclerView
+                        //if message was sent by one of the two users push it to the list that the recyclerView uses
                         if ((chat.receiverId.equals(myId) && chat.senderId.equals(otherUserId)) ||
                                 (chat.receiverId.equals(otherUserId) && chat.senderId.equals(myId))) {
                             mChat.add(chat);
@@ -105,7 +103,7 @@ public class ChatManager {
             }
         };
         reference.addValueEventListener(valueEventListener);
-        return valueEventListener; //θα το χρησιμοποιήσω στην onDestroy() της ChatActivity
+        return valueEventListener; // this is used in the onDestroy() method to remove the listener
     }
 
 
