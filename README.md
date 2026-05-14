@@ -7,12 +7,12 @@
 
 ## Core Features
 
-– Real-time Messaging: Your messages sync everywhere at once. Send a text on one device and see it appear instantly on other's device.
-– Authentication: Integrated dual-auth system. Jump right in using your Google account or a simple email and password.
-– Dynamic Theming: Full support for Dark Mode, Light Mode and System Default synchronization.
-– Global Localization: Instant runtime language switching between English and Greek without application restart.
-– Profile/Account Management: Personalize your profile by picking an avatar and manage your data with secure account deletion options.
-– Smart AI Features: Save time with AI-powered "smart replies" and get quick summaries of your long chats so you’re always up to speed.
+- Real-time Messaging: Your messages sync everywhere at once. Send a text on one device and see it appear instantly on other's device.
+- Authentication: Integrated dual-auth system. Jump right in using your Google account or a simple email and password.
+- Dynamic Theming: Full support for Dark Mode, Light Mode and System Default synchronization.
+- Global Localization: Instant runtime language switching between English and Greek without application restart.
+- Profile/Account Management: Personalize your profile by picking an avatar and manage your data with secure account deletion options.
+- Smart AI Features: Save time with AI-powered "smart replies" and get quick summaries of your long chats so you’re always up to speed.
 
 ---
 
