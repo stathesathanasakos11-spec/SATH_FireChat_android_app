@@ -1,7 +1,6 @@
 # SATH FireChat
-### A Professional Real-time Android Messaging System
 
-**SATH FireChat** is a robust, high-performance Android application built to demonstrate modern mobile development practices. It provides a seamless real-time communication experience, leveraging **Firebase** for backend services and a meticulously decoupled architecture to ensure scalability and maintainability.
+**SATH FireChat** is a robust, native Android application built to demonstrate modern mobile development practices. It provides a seamless real-time communication experience, using **Firebase** for backend services and Clean architecture to ensure scalability and maintainability.
 
 ---
 
