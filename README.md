@@ -124,9 +124,10 @@ protected void attachBaseContext(Context newBase) {
 ### 2. Sensitive Data Encryption
 - **The Problem (Plaintext Messages):** Right now, all chat texts are stored inside Firebase as plain text. If someone gains unauthorized access to the Firebase Console, they can read every user's private conversations
 - **One possible Solution (AES-256 + Android Keystore System):** Maybe I can implement symmetric AES-256 encryption using the "Android Keystore System":
-  **1. Hardware-Backed Security:** Instead of hardcoding a static key, the key will be generated dynamically inside the device’s hardware-isolated storage (TEE/StrongBox) using a Password-Based Encryption (PBE) approach. The app will never expose the raw key in the code, will only ask the Keystore to encrypt and decrypt the payloads.
 
-  **2. Application Logic Integration:** I can create a `CryptoUtils.java` helper class. [cite_start]The `ChatManager.java` will encrypt the `messageText` string on the phone right before uploading it to the `Chats` node[cite: 125, 252]. [cite_start]Upon retrieval, the `MessagesAdapter.java` will decrypt the string before rendering it on the chat screen[cite: 253, 272].
+   **1. Hardware-Backed Security:** Instead of hardcoding a static key, the key will be generated dynamically inside the device’s hardware-isolated storage (TEE/StrongBox) using a Password-Based Encryption (PBE) approach. The app will never expose the raw key in the code, will only ask the Keystore to encrypt and decrypt the payloads.
+
+   **2. Application Logic Integration:** I can create a `CryptoUtils.java` helper class. [cite_start]The `ChatManager.java` will encrypt the `messageText` string on the phone right before uploading it to the `Chats` node[cite: 125, 252]. [cite_start]Upon retrieval, the `MessagesAdapter.java` will decrypt the string before rendering it on the chat screen[cite: 253, 272].
 
 
 ---
