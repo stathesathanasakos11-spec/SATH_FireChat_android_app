@@ -1,10 +1,10 @@
 # SATH FireChat
 
-**SATH FireChat** is a robust, native Android application built to demonstrate modern mobile development practices. It provides a seamless real-time communication experience, using **Firebase** for backend services and Clean architecture to ensure scalability and maintainability.
+**SATH FireChat** is a native Android application built to demonstrate modern mobile development practices. It provides a seamless real-time communication experience, using **Firebase** for backend services and Clean architecture to ensure scalability and maintainability.
 
 ---
 
-## Core Features
+## Features
 
 - Real-time Messaging: Your messages sync everywhere at once. Send a text on one device and see it appear instantly on other's device.
 - Authentication: Integrated dual-auth system. Jump right in using your Google account or a simple email and password.
@@ -17,13 +17,13 @@
 
 ## Architecture Deep Dive
 
-The project follows **Clean Architecture** principles, prioritizing the **Single Responsibility Principle (SOLID)**. The logic is divided into distinct layers to avoid "God Activities" and ensure high maintainability:
+The project follows **Clean Architecture** principles, prioritizing the **Single Responsibility Principle (SOLID)**. The logic is divided into distinct layers to avoid "God Activities" and give high maintainability:
 
 ### 1. UI Layer (View)
-Activities (e.g., `ChatActivity`, `ProfileActivity`) are strictly responsible for rendering data and capturing user input. They extend a `BaseActivity` which handles global configuration like locale and theme application.
+Activities (e.g., `ChatActivity`, `ProfileActivity`) are responsible only for rendering data and capturing user input. They extend the `BaseActivity` which handles global configuration like locale and theme application.
 
 ### 2. Logic Layer (Managers)
-Singleton Managers (e.g., `AuthManager`, `ChatManager`, `ThemeManager`) act as the "brain" of the app. They handle business logic, data validation, and state management, communicating results back to the UI via dedicated **Interfaces**.
+Singleton Managers (e.g., `AuthManager`, `ChatManager`, `ThemeManager`) act as the brain of the app. With them I handle business logic, data validation, and state management, communicating results back to the UI via proper **Interfaces**.
 
 ### 3. Data Layer (Firebase)
 Firebase serves as the single source of truth. The app utilizes:
@@ -35,7 +35,7 @@ Firebase serves as the single source of truth. The app utilizes:
 ## Key Code Explanations
 
 ### Decoupled Logic Pattern
-Instead of calling Firebase directly from the Activity, we use a Manager pattern with asynchronous callbacks. This makes the code unit-testable and the UI highly responsive.
+Instead of calling Firebase directly from the Activity, I use a Manager (logic layer) with asynchronous callbacks. This makes the code unit-testable and the UI highly responsive.
 
 ```java
 // Example of the clean communication pattern in ChatManager.java
@@ -54,10 +54,10 @@ public void sendMessage(String senderId, String receiverId, String messageText, 
 ```
 
 ### Global Configuration via BaseActivity
-To ensure that theme and language changes persist and apply immediately to every screen, we utilize a `BaseActivity` context wrapper.
+To ensure that theme and language changes persist and apply immediately to every screen, I utilize a `BaseActivity` context wrapper.
 
 ```java
-// BaseActivity handles the locale and theme for every inheriting screen
+// BaseActivity to handle the locale and theme for every inheriting screen
 @Override
 protected void attachBaseContext(Context newBase) {
     languageManager = new LanguageManager(newBase);
@@ -70,7 +70,7 @@ protected void attachBaseContext(Context newBase) {
 ## Tech Stack
 
 - **Language**: Java
-- **Backend**: Firebase (Auth, Realtime Database)
+- **Backend**: Firebase (Authentication, Realtime Database)
 - **Identity**: Google Sign-In SDK
 - **UI Framework**: Material Design 3 (Components), ConstraintLayout, Edge-to-Edge
 - **Jetpack Libraries**: Activity, Core
@@ -98,4 +98,4 @@ protected void attachBaseContext(Context newBase) {
 
 ## Author
 **Efstathios Panagiotis Athanasakos**  
-*Computer Science Student at University of Piraeus*
+*Final-year BSc Computer Science Student at the University of Piraeus*
