@@ -31,6 +31,34 @@ Firebase serves as the single source of truth. The app utilizes:
 - **Realtime Database**: For a reactive, NoSQL approach to storing messages and user metadata.
 
 ---
+## Database Architecture
+
+To keep user data safe without breaking the real-time updates, I added security rules directly to the database:
+```json
+{
+  "rules": {
+    "users": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "Chats": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "ChatList": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+}
+```
+That way I ensure that:
+- Only authenticated users (auth != null) can read chat message paths or search for other users. Anonymous external API calls are blocked.
+- A user can only write or update data inside the users/$uid node if their current authenticated session token perfectly matches that specific node's ID. This prevents unauthorized users from modifying other people's profiles.
+
+---
 
 ## Key Code Explanations
 
