@@ -41,6 +41,7 @@ I used a NoSQL solution (Realtime Database). I created three distinct, specializ
 
 In a standard database (like SQL), if I wanted to show the chat history on the main screen, the app would have to search through thousands of users and messages every single time. As more users join the app, this would make the app slow, uses too much internet data, and can even cause crashes. So, I decided to use the Realtime Database and split it into three independent nodes, with no database relations (flat structure).
 
+
 ### Safety Rules
 To keep user data safe without breaking the real-time updates, I added security rules directly to the database:
 ```json
@@ -103,6 +104,15 @@ protected void attachBaseContext(Context newBase) {
 ```
 
 ---
+## Future Roadmap
+
+### 1. Data Privacy & Realtime Database Vulnerabilities
+- **The Problem (Insecure Open Access):** Currently, μυ database allows ANY logged-in user to read and write messages across the entire application. A malicious user could bypass the app's UI,via its URL, and read private conversations belonging to other people.
+- **The Solution (Dynamic Security Rules):** Τhe database rules must be updated to inspect each chat message. The system should only grant read/write access if the logged-in user's `UID` perfectly matches either the `senderId` or the `receiverId` of that specific message.
+
+
+
+---
 
 ## Tech Stack
 
@@ -135,4 +145,4 @@ protected void attachBaseContext(Context newBase) {
 
 ## Author
 **Efstathios Panagiotis Athanasakos**  
-*Final-year BSc Computer Science Student at the University of Piraeus*
+*Final-year BSc Computer Science student at the University of Piraeus*
