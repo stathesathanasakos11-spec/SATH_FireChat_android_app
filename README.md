@@ -6,12 +6,12 @@
 
 ## Features
 
-- Real-time Messaging: Your messages sync everywhere at once. Send a text on one device and see it appear instantly on other's device.
-- Authentication: Integrated dual-auth system. Jump right in using your Google account or a simple email and password.
-- Dynamic Theming: Full support for Dark Mode, Light Mode and System Default synchronization.
-- Global Localization: Instant runtime language switching between English and Greek without application restart.
-- Profile/Account Management: Personalize your profile by picking an avatar and manage your data with secure account deletion options.
-- Smart AI Features: Save time with AI-powered "smart replies" and get quick summaries of your long chats so you’re always up to speed.
+- Real-time Messaging: Your messages sync everywhere at once. Send a text on one device and see it appear instantly on other's device
+- Authentication: Integrated dual-auth system. Jump right in using your Google account or a simple email and password
+- Dynamic Theming: Full support for Dark Mode, Light Mode and System Default synchronization
+- Global Localization: Instant runtime language switching between English and Greek without application restart
+- Profile/Account Management: Personalize your profile by picking an avatar and manage your data with secure account deletion options
+- Smart AI Features: Save time with AI-powered "smart replies" and get quick summaries of your long chats so you’re always up to speed
 
 ---
 
@@ -27,12 +27,21 @@ Singleton Managers (e.g., `AuthManager`, `ChatManager`, `ThemeManager`) act as t
 
 ### 3. Data Layer (Firebase)
 Firebase serves as the single source of truth. The app utilizes:
-- **Authentication**: To manage user sessions securely.
-- **Realtime Database**: For a reactive, NoSQL approach to storing messages and user metadata.
+- **Authentication**: To manage user sessions securely
+- **Realtime Database**: For a reactive, NoSQL approach to storing messages and user metadata
 
 ---
 ## Database Architecture
 
+### Architecture
+I used a NoSQL solution (Realtime Database). I created three distinct, specialized nodes:
+- users: Stores essential metadata keyed strictly under a unique User ID (UID)
+- Chats: Holds individual message payloads with millisecond timestamps for instantaneous chronological ordering
+- ChatList: It is something like a lightweight index for each user's active conversations
+
+In a standard database (like SQL), if I wanted to show the chat history on the main screen, the app would have to search through thousands of users and messages every single time. As more users join the app, this would make the app slow, uses too much internet data, and can even cause crashes. So, I decided to use the Realtime Database and split it into three independent nodes, with no database relations (flat structure).
+
+### Safety Rules
 To keep user data safe without breaking the real-time updates, I added security rules directly to the database:
 ```json
 {
